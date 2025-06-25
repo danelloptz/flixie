@@ -1,4 +1,4 @@
-￼
+![Flixie](public/img/icons/android-chrome-192x192.png)
 # Flixie
 
 ## Самый главный вопрос: почему Flixie? 
