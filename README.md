@@ -1,6 +1,8 @@
 ![Flixie](public/img/icons/android-chrome-192x192.png)
 # Flixie
 
+[План проекта](/docs/plan.md)
+
 ## Самый главный вопрос: почему Flixie? 
 “flicks” (фильмы) + суффикс.
 > типа модно-молодёжно, слэнг, все дела, лол кек
