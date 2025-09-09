@@ -1,0 +1,37 @@
+@startuml
+actor User
+participant Frontend as FE
+participant "API Gateway" as API
+participant "Notification Service" as Notify
+database DB
+
+== Просмотр уведомлений ==
+User -> FE : Переходит на страницу уведомлений
+FE -> API : GET запрос на список уведомлений
+API -> Notify : Получить уведомления
+Notify -> DB : Выбор уведомлений пользователя
+DB --> Notify : Данные уведомлений
+Notify -> API : Список уведомлений
+API -> FE : JSON список
+FE -> User : Вывод уведомлений
+
+== Нажатие на уведомление о мэтче ==
+User -> FE : Кликает на уведомление
+FE -> API : GET запрос на информацию о мэтче
+API -> Notify : Получить данные мэтча
+Notify -> DB : Выбор данных о мэтче
+DB --> Notify : Данные мэтча
+Notify -> API : Данные мэтча
+API -> FE : Данные мэтча
+FE -> User : Отображение карточки фильма
+
+== Принятие приглашения в сессию/друзья ==
+User -> FE : Кликает "Принять/Отклонить"
+FE -> API : POST запрос с выбранным действием пользователя
+API -> Notify : Обновить статус уведомления
+Notify -> DB : Обновление статуса сессии/друзей
+DB --> Notify : OK
+Notify -> API : OK
+API -> FE : Ответ
+FE -> User : Информация об обновлении статуса
+@enduml

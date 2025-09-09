@@ -1,0 +1,36 @@
+@startuml
+actor User
+participant Frontend as FE
+participant "API Gateway" as API
+participant "Socials Service" as Socials
+participant "Notification Service" as Notify
+database DB
+
+== Просмотр друзей ==
+User -> FE : Открыть страницу друзей
+FE -> API : GET запрос на список друзей
+API -> Socials : Получить список друзей
+Socials -> DB : Выбор всех друзей пользователя
+DB --> Socials : Список друзей
+Socials -> API : Список друзей
+API -> FE : JSON список
+FE -> User : Отобразить список друзей
+
+== Добавить друга по нику ==
+User -> FE : Вводит ник/ID
+FE -> API : POST запрос на добавление запроса в друзья
+API -> Socials : Создать запрос
+Socials -> DB : Добавление запроса в друзья
+DB --> Socials : OK
+Socials -> Notify : Уведомление получателю
+Notify --> User : Уведомление об отправленном запросе пользователю и уведомление о запросе в друзья другому пользователю
+
+== Принятие/Отклонение запроса ==
+User -> FE : Нажимает "Принять"/"Отколнить"
+FE -> API : POST запрос на изменение статуса
+API -> Socials : Обновить статус
+Socials -> DB : Обновление статуса пользователей и удаление запроса в друзья
+DB --> Socials : OK
+Socials -> Notify : Уведомление инициатору
+Notify --> User : Уведомление "Теперь вы друзья" либо уведмоление об отклонении дружбы
+@enduml

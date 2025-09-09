@@ -1,0 +1,51 @@
+@startuml AA
+actor User
+participant Frontend as FE
+participant "API Gateway" as API
+participant "Auth Service" as Auth
+participant "Notification Service" as Notify
+participant "Google OAuth" as Google
+database DB
+
+== Регистрация с подтверждением почты ==
+User -> FE : Вводит данные для регистрации
+FE -> API : POST запрос
+API -> Auth : Создать пользователя
+Auth -> DB : Добавление пользователя в качестве гостя
+DB --> Auth : OK
+Auth -> Notify : Отправка email с токеном
+Notify --> User : Письмо с подтверждением
+
+User -> FE : Кликает по ссылке из письма
+FE -> API : GET подтверждение регистрации
+API -> Auth : Проверка токена
+Auth -> DB : Пользователь становится подтвержденным
+DB --> Auth : OK
+Auth -> API : "Почта подтверждена"
+API -> FE : Сообщение об успехе
+FE -> User : Подтверждение регистрации
+
+== Авторизация (логин/пароль) ==
+User -> FE : Вводит логин и пароль
+FE -> API : POST с данными авторизации
+API -> Auth : Проверка данных
+Auth -> DB : Проверка наличия пользователя
+DB --> Auth : Статус наличия
+Auth -> API : JWT-токен / ошибка
+API -> FE : Статус
+FE -> User : Успех / ошибка
+
+== Авторизация через Google OAuth ==
+User -> FE : Жмет "Войти через Google"
+FE -> Google : Запрос авторизации
+Google --> FE : Authorization code
+FE -> API : GET Запрос с параметром code
+API -> Auth : Обмен кода на токен
+Auth -> Google : Запрос access_token
+Google --> Auth : access_token + profile
+Auth -> DB : Обновление токенов пользователя
+DB --> Auth : OK
+Auth -> API : JWT-токен
+API -> FE : JWT-токен
+FE -> User : Успешный вход
+@enduml
