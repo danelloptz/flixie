@@ -1,0 +1,53 @@
+@startuml
+actor User
+participant Frontend as FE
+participant "API Gateway" as API
+participant "Session Service" as Session
+participant "Selection Service" as Selection
+participant "Notification Service" as Notify
+database DB
+
+== Создание новой сессии ==
+User -> FE : Создает сессию и вводит параметры (имя, параметры, время жизни)
+FE -> API : POST запрос на создание сессии
+API -> Session : Создать сессию
+Session -> DB : Создание сессии
+DB --> Session : OK
+Session -> API : SessionID
+API -> FE : SessionID
+FE -> User : Сессия создана
+
+== Приглашение друзей ==
+User -> FE : Приглашает друзей
+FE -> API : POST запрос на приглашения друзей
+API -> Session : Отправить приглашения
+Session -> Notify : Уведомление друзьям
+Notify --> User : Приглашение в сессию
+
+== Начало сессии и получение фильмов ==
+User -> FE : Начинает сессию
+FE -> API : POST запрос на запуск сессии
+API -> Session : Обновить статус сессии
+Session -> Selection : Запрос фильмов
+Selection -> DB : Выбор фильмов по фильтрам
+DB --> Selection : Список фильмов
+Selection -> Session : Фильмы
+Session -> API : OK
+API -> FE : Первый фильм
+FE -> User : Отображение карточки
+
+== Действия с фильмами ==
+User -> FE : Свайп влево/вправо/вверх
+FE -> API : POST запрос на сохранение действия пользователя
+API -> Session : Сохранить действие
+Session -> DB : Добавление действия пользователя
+DB --> Session : OK
+Session -> API : OK
+API -> FE : ОК
+
+== Мэтч ==
+Session -> DB : Проверка действий участников
+DB --> Session : Найден мэтч
+Session -> Notify : Уведомление всем
+Notify --> User : Сообщение о нахождении мэтча
+@enduml

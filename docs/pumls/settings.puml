@@ -1,0 +1,27 @@
+@startuml
+actor User
+participant Frontend as FE
+participant "API Gateway" as API
+participant "Profile Service" as Profile
+database DB
+
+== Просмотр личной информации ==
+User -> FE : Переходит в настройки
+FE -> API : GET запрос на получение данных о настройках пользователя
+API -> Profile : Получить данные
+Profile -> DB : Выбор данных о пользователе
+DB --> Profile : Данные профиля
+Profile -> API : Возврат профиля
+API -> FE : JSON
+FE -> User : Отображение данных
+
+== Изменение личной информации ==
+User -> FE : Меняет данные в настройках
+FE -> API : PATCH запрос на обновление изменных данных
+API -> Profile : Обновить данные
+Profile -> DB : Обновление данных
+DB --> Profile : OK
+Profile -> API : OK
+API -> FE : Подтверждение
+FE -> User : Изменения сохранены
+@enduml
