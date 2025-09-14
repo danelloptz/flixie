@@ -127,3 +127,82 @@
 
 Заметки, чтобы запомнить:
 - выбора времени жизни сессии сделать так: сначала круг для выбора часов (от 0 до 23), затем круг выбора минут (от 0 до 59)
+
+project-root/
+├── assets/
+│   ├── colors.css
+│   ├── text.css
+│   ├── global.css
+│   ├── images/
+│   │── ......
+│   └── fonts/
+│       └── ........
+│
+├── components/
+│   ├── buttons/
+│   │   ├── AppButtonFilled.vue
+│   │   └── AppButtonBasic.vue
+│   ├── inputs/
+│   │   ├── AppInputBasic.vue
+│   │   └── AppInputPass.vue
+│   ├── cards/
+│   │   ├── MovieCard.vue
+│   │   ├── FriendCard.vue
+│   │   └── NotificationCard.vue
+│   ├── navigation/
+│   │   ├── AppNavbar.vue
+│   └── common/
+│       ├── AppModal.vue
+│       ├── AppLoader.vue
+│
+├── layouts/
+│   ├── MainLayout.vue      
+│   └── AuthLayout.vue      
+│
+├── views/
+│   ├── auth/
+│   │   ├── LoginView.vue
+│   │   ├── RegisterView.vue
+│   │   └── EmailConfirmView.vue
+│   ├── sessions/
+│   │   ├── SessionListView.vue
+│   │   ├── SessionCreateView.vue
+│   │   └── SessionDetailView.vue
+│   ├── friends/
+│   │   └── FriendsView.vue
+│   ├── notifications/
+│   │   └── NotificationsView.vue
+│   ├── settings/
+│   │   └── SettingsView.vue
+│   └── home/
+│       └── HomeView.vue
+│
+├── router/
+│   └── index.js            # Vue Router
+│
+├── store/
+│   ├── index.js            # подключение Vuex/Pinia
+│   ├── auth.js
+│   ├── sessions.js
+│   ├── friends.js
+│   ├── notifications.js
+│   └── settings.js
+│
+├── services/
+│   ├── api.js              # базовый axios instance
+│   ├── authService.js
+│   ├── sessionService.js
+│   ├── friendService.js
+│   ├── notificationService.js
+│   └── settingsService.js
+│
+├── utils/
+│   ├── validators.js
+│   ├── formatters.js
+│   └── constants.js
+│
+├── App.vue
+├── main.js
+├── manifest.json           # PWA манифест
+├── vite.config.js          # если используешь Vite
+└── package.json
