@@ -1,0 +1,26 @@
+@font-face {
+    font-family: 'Inter';
+    src: url('fonts/Inter.ttf');
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+span, h1, h2, h3, h4, p, li, div, input {
+    color: var(--main_text_color);
+    font-family: 'Inter';
+}
+
+body {
+    background: var(--base_bg);
+}
+
+h1 {
+    font-size: var(--big_title);
+    margin: 0;
+    font-weight: normal;
+    letter-spacing: 1px;
+}

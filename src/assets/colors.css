@@ -1,0 +1,16 @@
+:root {
+    /* ЦВЕТА ФОНА */
+    --base_bg: #0E0F12;
+    --second_bg: #161821;
+    --card_bg: #1E2130;
+    --divider: #2A2D3A;
+    --primary_accent: #7C8CFF;
+    --like: #3DDC97;
+    --dislike: #FF6B6B;
+    --warning: #FFB020;
+
+    /* ЦВЕТА ТЕКСТА */
+    --main_text_color: #E6E8F0;
+    --secondary_text_color: #9AA0B2;
+    --unactive_text_color: #5C6072;
+}

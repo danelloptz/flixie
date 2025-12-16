@@ -1,34 +1,40 @@
 <template>
   <div class="auth-container">
-    <h1>Вход в Flixie</h1>
+    <h1>Вход</h1>
 
-    <form @submit.prevent="login">
-      <AppInputBasic
-        label="Логин"
-        placeholder="Введите логин"
-        v-model="loginValue"
-      />
+      <div class="input_group">
+        <AppInputBasic
+          placeholder="Введите логин"
+          v-model="loginValue"
+        />
 
-      <AppInputPass
-        label="Пароль"
-        placeholder="Введите пароль"
-        v-model="password"
-      />
-
-      <div v-if="error" class="error">
-        {{ error }}
+        <AppInputPass
+          placeholder="Введите пароль"
+          v-model="password"
+        />
       </div>
 
-      <AppButtonFilled type="submit">
+      <AppButtonFilled>
         Войти
       </AppButtonFilled>
+
+      <div class="line_wrapper">
+        <div class="line"></div>
+        <span>или</span>
+        <div class="line"></div>
+      </div>
+
       <AppButtonFilled 
-        type="submit"
         @click="openGoogle"
+        class="google_btn"
       >
         Войти через Google
       </AppButtonFilled>
-    </form>
+      <AppButtonBasic 
+        @click="openSignup"
+      >
+        Нет аккаунта? Зарегистрироваться
+      </AppButtonBasic>
   </div>
 </template>
 
@@ -37,6 +43,7 @@ import AppInputBasic from "@/components/inputs/AppInputBasic.vue";
 import AppInputPass from "@/components/inputs/AppInputPass.vue";
 import AppButtonFilled from "@/components/buttons/AppButtonFilled.vue";
 import { authGoogle } from "@/services/authService";
+import AppButtonBasic from "@/components/buttons/AppButtonBasic.vue";
 
 export default {
   name: "AppLoginView",
@@ -44,6 +51,7 @@ export default {
     AppInputBasic,
     AppInputPass,
     AppButtonFilled,
+    AppButtonBasic
   },
   data() {
     return {
@@ -61,8 +69,13 @@ export default {
     await this.handleUrlParams();
   },
   methods: {
-    // http://localhost:8080/auth/login?state=grehthrtjui7643trr&code=4%2F0ATX87lNZ04qeLK8VEbEmAvbEsXPGPIiZJVRDgFSVEekAP6e70jRlntojamKNqk3Ts4dmEg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid&authuser=0&prompt=consent
+    openSignup() {
+      this.$router.push('/auth/signup');
+    },
     async handleUrlParams() {
+      /*
+        Функция для считывания параметров, которые отдаёт Google OAuth, и последующего обмена на токены.
+      */
       const params = new URLSearchParams(window.location.search);
 
       // параметры, которые отдаёт гугл (сравниваем state и засылаем code на бэк)
@@ -78,6 +91,7 @@ export default {
       }
     },
     getGoogleLink() {
+      // возвращаем ссылку для Google OAuth
       return `${this.base_url}?client_id=${this.google_client_id}&redirect_uri=${this.redirect_uri}&response_type=code&scope=${this.scopes}&access_type=online&state=${this.state}`;
     },
     openGoogle() {
@@ -85,52 +99,48 @@ export default {
       window.location.href = link;
       console.log(link);
     },
-    login() {
-      this.error = "";
-
-      if (!this.loginValue || !this.password) {
-        this.error = "Введите логин и пароль";
-        return;
-      }
-
-      if (this.loginValue === "admin" && this.password === "123456") {
-        this.$store.commit("setUser", { login: this.loginValue });
-        this.$router.push("/");
-      } else {
-        this.error = "Неверный логин или пароль";
-      }
-    },
   },
-  // async def generate_google_auth_url():
-  //   state=secrets.token_urlsafe(30)
-  //   await Redis.session.set(name=f"{redis_templates.google_state}{state}", value="1", ex=60*60) # Помним 1 ч.
-  //   logging.info("Generate and save in Radis random state to prevent CSRF")
-  //   base_url = "https://accounts.google.com/o/oauth2/v2/auth" 
-  //   params = {
-  //       "client_id": settings.GOOGLE_CLIENT_ID,
-  //       "redirect_uri": "http://localhost:8000/auth/google/callback",
-  //       "response_type": "code",
-  //       "scope": "openid profile email",
-  //       "access_type": "online",
-  //       "state": state
-  //   }
-  //   auth_url = f"{base_url}?{urlencode(params)}"
-  //   return auth_url
 };
 </script>
 
 <style scoped>
 .auth-container {
-  max-width: 360px;
-  margin: 80px auto;
-  padding: 24px;
-  border-radius: 8px;
-  background: #ffffff;
+  display: flex;
+  width: 100%;
+  padding: 80px 20px 0px 20px;
+  flex-direction: column;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 24px;
+.input_group {
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px;
+  margin-top: 23px;
+  margin-bottom: 32px;
+}
+
+.line_wrapper {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.line {
+  width: 160px;
+  height: 1px;
+  background: var(--unactive_text_color);
+}
+
+.line_wrapper span {
+  color: var(--unactive_text_color);
+  font-size: var(--main_text);
+}
+
+.google_btn {
+  background: var(--card_bg); 
+  border: 1px solid var(--primary_accent); 
+  margin-top: 18px;
 }
 
 .error {
@@ -138,4 +148,6 @@ h1 {
   margin-bottom: 12px;
   text-align: center;
 }
+
+
 </style>

@@ -1,0 +1,8 @@
+:root {
+    /* РАЗМЕРЫ ТЕКСТА */
+    --big_title: 28px;
+    --medium_title: 24px;
+    --film_title: 20px;
+    --main_text: 14px;
+    --sub_text: 12px;
+}

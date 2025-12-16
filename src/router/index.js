@@ -10,14 +10,15 @@ import Friends from "@/views/friends/AppFriedsView.vue";
 import Sessions from "@/views/sessions/AppSessionsListView.vue";
 import Notifications from "@/views/notifications/AppNotificationsView.vue";
 import Settings from "@/views/settings/AppSettingsView.vue";
+import AppStart from "@/views/auth/AppStart.vue";
 
 const routes = [
   {
     path: "/auth",
-    component: AppAuthLayout,
     children: [
+      { path: "", component: AppStart },
       { path: "login", component: Login },
-      { path: "register", component: Register },
+      { path: "signup", component: Register },
     ],
   },
   {
@@ -42,6 +43,7 @@ const router = createRouter({
 export default router;
 
 import store from "@/store";
+
 
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !store.state.isAuthenticated) {
