@@ -1,0 +1,64 @@
+@startuml
+left to right direction
+  actor "Пользователь" as User
+
+  package "Веб-приложение" {
+    package "Фронтенд" as front {
+    package "Авторизация и регистрация" as Auth_Login {
+        [Модуль авторизации] as Auth
+        [Модуль регистрации] as Login
+    }
+    package "Личный кабинет" as LK {
+       [Модуль сессий] as Session
+       [Модуль друзей] as Friends
+       [Модуль настроек] as Settings
+       [Модуль уведомлений] as Notifications
+    }
+    
+  }
+    [API Gateway] as API
+    User --> front
+    front --> API : HTTP-запросы
+    Auth_Login --> LK
+    Friends --> Notifications
+    Session --> Friends
+    Session <--> Notifications
+    Settings --> Friends
+    Settings --> Session
+    Settings --> Notifications
+    
+  }
+
+  database "\n\nБаза данных\n\n\n" as db
+  cloud "OAuth (Google)" as oauth
+  front --> Auth
+  front --> Login
+  Login --> Auth
+
+  package "Модули" as Modules{
+    [Модуль авторизации и регистрации] as auth
+    [Модуль уведомлений] as notification
+    [Модуль сессий] as session
+    [Модуль социальных взаимодействий] as socials
+    [Модуль подбора фильмов] as selection
+    [Модуль управления профилем] as controll
+  }
+  
+  
+  API --> auth
+  API --> controll
+  API --> session
+  API --> socials
+
+  auth <--> oauth
+  auth <--> db
+  session <--> db
+  socials <--> db
+  selection <--> db
+  controll <--> db
+
+  auth --> notification : Подтверждение email
+  session --> notification : Match / Приглашение
+  socials --> notification : Приглашение в друзья
+  session --> selection : Выбор подходящего фильма
+@enduml

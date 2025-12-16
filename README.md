@@ -200,7 +200,7 @@ project-root/
 │   ├── validators.js
 │   ├── formatters.js
 │   └── constants.js
-│
+│д
 ├── App.vue
 ├── main.js
 ├── manifest.json           # PWA манифест

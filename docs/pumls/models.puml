@@ -1,0 +1,100 @@
+@startuml
+left to right direction
+  actor Пользователь as user
+
+
+  package "Приложение" as app {
+    package "Регистрация/Авторизация" as auth {
+      (Вход с использованием логина и пароля) as base_auth
+      (Вход с использованием аккаунта в доверенном сервисе) as oauth_auth
+      (Регистрация с логином и паролем) as register
+      (Восстановление пароля) as password_reset
+    }
+      
+    package "Стартовый экран" as start_screen {
+      (Просмотр сессий) as session_list
+      (Страница настроек) as settings_page
+      (Создать сессию) as create_session_page
+      (Страница друзей) as friends_page
+      (Страница уведомлений) as notification_page
+    }
+
+    package "Сессия выбора" as session {
+      (Просмотр информации о фильме) as view_film_info
+      (Бинарный выбор фильма: нравится/не нравится) as film_swipe
+      (Просмотр подробной информации о фильме) as detailed_film_view
+      (Событие Match: найден идеальный фильм) as match_event
+    }
+
+    package "Создание сессии" as create_session {
+      (Задать имя и срок жизни сессии) as session_name_duration
+      (Приглашение друзей в сессию) as invite_friends
+      (Настройка параметров поиска) as search_filters
+      (Запуск сессии) as start_session
+    }
+
+    package "Настройки" as settings {
+      (Изменение\добавление email) as change_email
+      (Редактирование личной информации) as edit_profile
+      (Удаление аккаунта) as delete_account
+      (Выход из аккаунта) as exit_account
+      (Изменение пароля) as change_password
+    }
+
+    package "Друзья" as friends {
+      (Просмотр списка друзей) as view_friends
+      (Добавление друзей по нику/ID) as add_friend
+      (Отправка приглашений) as send_invite
+    }
+
+    package "Уведомления" as notifications {
+      (Просмотр уведомлений о Match) as match_notification
+      (Просмотр запросов в друзья) as friend_request
+      (Просмотр приглашений в сессию) as session_invite
+      
+      (Принять/отклонить запрос в друзья) as handle_friend_request
+      (Принять/отклонить приглашение в сессию) as handle_session_invite
+    }
+  }
+
+  user --> base_auth
+  user --> oauth_auth
+  user --> register
+  user --> password_reset
+
+  ' === Связи между компонентами ===
+  auth --> start_screen : "После авторизации"
+  
+  ' Пользователь взаимодействует с главным экраном
+  user --> session_list
+  user --> settings_page
+  user --> create_session_page
+  user --> friends_page
+  user --> notification_page
+
+  ' Переходы из стартового экрана
+  session_list --> session : "Выбор сессии"
+  settings_page --> settings
+  create_session_page --> create_session
+  friends_page --> friends
+  notification_page --> notifications
+
+  ' Внутри сессии
+  film_swipe --> match_event : "При совпадении предпочтений"
+
+  ' Создание сессии
+  start_session --> session : "Применение фильтров"
+
+  ' Уведомления
+  notifications --> match_notification
+  notifications --> friend_request
+  notifications --> session_invite
+
+  ' Обработка действий в уведомлениях
+  friend_request --> handle_friend_request
+  session_invite --> handle_session_invite
+
+  ' Обратная связь после обработки
+  handle_friend_request --> view_friends : "Обновление списка"
+  handle_session_invite --> session_list : "Добавление сессии"
+@enduml
