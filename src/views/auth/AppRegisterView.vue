@@ -37,25 +37,37 @@
 
     <div class="profile_photo" v-if="step == 2">
       <h1>Фото профиля</h1>
+      <span class="create_acc_text">Выберите изображение для профиля</span>
+
+      <div class="photo_preview" @click="initiateInputClick">
+        <img v-if="photoPreview" :src="photoPreview" alt="Preview" class="avatar" />
+        <img src="@/assets/images/video-camera.png" class="photo_preview_sample" v-if="!photoPreview" />
+      </div>
+
+      <span class="upload_text" @click="initiateInputClick">Загрузить фото</span>
 
       <AppInputBasic
+        ref="photo_input"
+        style="display: none;"
         label="Аватарка"
         type="file"
         @change="onPhotoChange"
       />
 
-      <div v-if="photoPreview" class="photo_preview">
-        <img :src="photoPreview" alt="Preview" />
+      <div class="tight_input_group">
+        <AppButtonFilled @click="nextStep">
+          Далее
+        </AppButtonFilled>
+        <AppButtonBasic>
+          Пропустить
+        </AppButtonBasic>
       </div>
-
-      <AppButtonFilled @click="nextStep">
-        Далее
-      </AppButtonFilled>
     </div>
 
 
     <div class="interests" v-if="step == 3">
-      <h1>Интересы</h1>
+      <h1>Любимые жанры</h1>
+      <span class="create_acc_text">Выберите несколько жанров</span>
 
       <div class="interests_items">
         <div
@@ -65,15 +77,11 @@
           :class="{ active: isGenreSelected(item.en) }"
           @click="toggleGenre(item.en)"
         >
-          <span class="checkbox">
-            <span v-if="isGenreSelected(item.en)" class="checkbox_inner"></span>
-          </span>
-
           {{ item.rus }}
         </div>
       </div>
 
-      <AppButtonFilled @click="endSignup">
+      <AppButtonFilled class="end_btn" @click="endSignup">
         Завершить
       </AppButtonFilled>
     </div>
@@ -85,7 +93,9 @@
 import AppInputBasic from "@/components/inputs/AppInputBasic.vue";
 import AppInputPass from "@/components/inputs/AppInputPass.vue";
 import AppButtonFilled from "@/components/buttons/AppButtonFilled.vue";
-import { signupUser, signupSubmit } from "@/services/authService";
+import AppButtonBasic from "@/components/buttons/AppButtonBasic.vue";
+import { signupUser, signupSubmit, loadImage } from "@/services/authService";
+import { useAuthStore } from "@/store/auth";
 
 export default {
   name: "AppLoginView",
@@ -93,6 +103,7 @@ export default {
     AppInputBasic,
     AppInputPass,
     AppButtonFilled,
+    AppButtonBasic
   },
   data() {
     return {
@@ -184,7 +195,13 @@ export default {
       selectedGenres: [],
     };
   },
+  async mounted() {
+    await this.handleUrlParams();
+  },
   methods: {
+    initiateInputClick() {
+      this.$refs.photo_input.trigger();
+    },
     async handleUrlParams() {
       /*
         Функция для считывания параметра token, который берется из письма с подтверждением.
@@ -200,8 +217,17 @@ export default {
       }
     },
     async endSignup() {
-      const signup_response = await signupUser(this.username, this.password, this.email, this.selectedGenres[0], this.photo);
-      console.log(signup_response);
+      const signup_response = await signupUser(this.username, this.password, this.email, this.selectedGenres, this.photoPreview);
+      if (signup_response?.access_token) {
+        const authStore = useAuthStore();
+
+        authStore.login({
+          access_token: signup_response.access_token,
+          refresh_token: signup_response.refresh_token,
+        });
+
+        this.$router.push("/");
+      }
     },
     nextStep() {
       this.step++;
@@ -215,13 +241,18 @@ export default {
         this.selectedGenres.splice(index, 1);
       }
     },
-    onPhotoChange(event) {
+    async onPhotoChange(event) {
       const file = event.target.files[0];
 
       if (!file) return;
 
       this.photo = file;
-      this.photoPreview = URL.createObjectURL(file);
+
+      const load_image_url = await loadImage(this.photo);
+      if (load_image_url) {
+        this.photoPreview = load_image_url;
+      }
+
     },
 
     isGenreSelected(genreEn) {
@@ -252,12 +283,12 @@ export default {
   text-align: center;
 }
 
-.user_data {
+.user_data, .profile_photo, .interests {
     display: flex;
     flex-direction: column;
 }
 
-.user_data span {
+.user_data span, .profile_photo span, .interests span {
   font-size: var(--main_text);
   color: var(--unactive_text_color);
   margin-top: 7px;
@@ -268,20 +299,24 @@ h1 {
 }
 
 .interests_items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 29px;
 }
 
 .interest_item {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 8px;
+  width: 100%;
+  border-radius: 18px;
   cursor: pointer;
-  background: #f5f5f5;
+  background: var(--divider);
   transition: background 0.2s;
+  color: var(--main_text_color);
+  font-size: var(--main_text);
+  padding: 10px 30px;
 }
 
 .interest_item:hover {
@@ -289,7 +324,7 @@ h1 {
 }
 
 .interest_item.active {
-  background: #e3f2fd;
+  background: var(--primary_accent);
 }
 
 .checkbox {
@@ -309,20 +344,56 @@ h1 {
   background: #1a73e8;
 }
 .photo_preview {
-  margin-top: 16px;
+  margin-top: 36px;
   display: flex;
   justify-content: center;
-}
-
-.photo_preview img {
+  align-items: center;
   width: 120px;
   height: 120px;
-  object-fit: cover;
   border-radius: 50%;
-  border: 2px solid #1a73e8;
+  align-self: center;
+  background: var(--card_bg);
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 50%;
+}
+
+.photo_preview_sample {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+
 }
 
 .next_btn {
+  margin-top: 32px;
+}
+
+.upload_text {
+  color: var(--main_text_color);
+  margin-top: 12px;
+  align-self: center;
+  letter-spacing: .3px;
+}
+
+.tight_input_group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 48px;
+}
+
+.create_acc_text {
+  color: var(--unactive_text_color);
+  font-size: var(--main_text);
+}
+
+.end_btn {
   margin-top: 32px;
 }
 </style>

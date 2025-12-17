@@ -14,12 +14,12 @@ module.exports = defineConfig({
       short_name: 'VuePWA',
       icons: [
         {
-          src: './img/icons/android-chrome-192x192.png',
+          src: 'src/assets/images/flixie_nobg.png',
           sizes: '192x192',
           type: 'image/png',
         },
         {
-          src: './img/icons/android-chrome-512x512.png',
+          src: 'src/assets/images/flixie_nobg.png',
           sizes: '512x512',
           type: 'image/png',
         },

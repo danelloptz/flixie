@@ -1,5 +1,6 @@
 <template>
     <input
+      ref="input"
       :type="type"
       :placeholder="placeholder"
       :value="modelValue"
@@ -19,6 +20,11 @@ export default {
       default: "text",
     },
   },
+  methods: {
+    trigger() {
+      this.$refs.input.click();
+    },
+  }
 };
 </script>
 

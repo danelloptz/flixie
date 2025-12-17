@@ -27,10 +27,10 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       { path: "", component: Home },
-      { path: "friends", component: Friends },
-      { path: "sessions", component: Sessions },
-      { path: "notifications", component: Notifications },
-      { path: "settings", component: Settings },
+      { path: "friends", component: Friends, meta: { title: "Друзья" }, },
+      { path: "sessions", component: Sessions, meta: { title: "Сессии" }, },
+      { path: "notifications", component: Notifications, meta: { title: "Уведомления" }, },
+      { path: "settings", component: Settings, meta: { title: "Настройки" }, },
     ],
   },
 ];
@@ -42,12 +42,13 @@ const router = createRouter({
 
 export default router;
 
-import store from "@/store";
-
+import { useAuthStore } from "@/store/auth";
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !store.state.isAuthenticated) {
-    next("/auth/login");
+  const auth = useAuthStore();
+
+  if (to.meta.requiresAuth && !auth.isAuth) {
+    next("/auth");
   } else {
     next();
   }

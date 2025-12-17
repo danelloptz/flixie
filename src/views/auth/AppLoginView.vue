@@ -14,7 +14,9 @@
         />
       </div>
 
-      <AppButtonFilled>
+      <AppButtonFilled
+        @click="login"
+      >
         Войти
       </AppButtonFilled>
 
@@ -42,8 +44,9 @@
 import AppInputBasic from "@/components/inputs/AppInputBasic.vue";
 import AppInputPass from "@/components/inputs/AppInputPass.vue";
 import AppButtonFilled from "@/components/buttons/AppButtonFilled.vue";
-import { authGoogle } from "@/services/authService";
+import { authGoogle, loginUser } from "@/services/authService";
 import AppButtonBasic from "@/components/buttons/AppButtonBasic.vue";
+import { useAuthStore } from "@/store/auth";
 
 export default {
   name: "AppLoginView",
@@ -69,6 +72,19 @@ export default {
     await this.handleUrlParams();
   },
   methods: {
+    async login() {
+      const login_response = await loginUser(this.loginValue, this.password);
+      if (login_response?.access_token) {
+        const authStore = useAuthStore();
+
+        authStore.login({
+          access_token: login_response.access_token,
+          refresh_token: login_response.refresh_token,
+        });
+
+        this.$router.push("/");
+      }
+    },
     openSignup() {
       this.$router.push('/auth/signup');
     },

@@ -2,10 +2,10 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import "./registerServiceWorker";
 import router from "./router";
-import store from "./store";
 import "./registerServiceWorker";
 import './assets/global.css'
 import './assets/colors.css'
 import './assets/text.css'
+import { createPinia } from "pinia";
 
-createApp(App).use(store).use(router).mount("#app");
+createApp(App).use(router).use(createPinia()).mount("#app");
