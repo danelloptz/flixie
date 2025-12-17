@@ -41,7 +41,7 @@ export default {
 
   methods: {
     async send() {
-      await sendFriendNotification(49, localStorage.getItem('access_token'));
+      await sendFriendNotification(47, localStorage.getItem('access_token'));
     },
     connectWebSocket() {
       const token = localStorage.getItem("access_token"); // если есть
