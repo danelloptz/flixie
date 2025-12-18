@@ -1,6 +1,6 @@
 <template>
     <section class="session_card">
-        <h2>{{ friend.name }}</h2> 
+        <h2>{{ friend?.name }}</h2> 
         <div class="participants_wrapper">
             <img 
                 class="participant"

@@ -24,7 +24,6 @@
   import { getSessions, getSessionParticipants } from '@/services/sessionService';
   import AppSessionCard from '@/components/cards/AppSessionCard.vue';
 export default {
-  name: "HomeView",
   components: { AppNotification, AppSessionCard },
 
   data() {
