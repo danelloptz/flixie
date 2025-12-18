@@ -22,7 +22,7 @@
             <span class="settings_text">Страна производства</span>
             <AppInputBasic class="input m-b"  :placeholder="'Страна'" v-model="session_country" />
 
-            <AppButtonFilled @click="createNewSession">Далее</AppButtonFilled>
+            <AppButtonFilled @click="next">Далее</AppButtonFilled>
         </div>
     </section>
     <section class="wrapper" v-if="activeIndex == 2">
@@ -42,7 +42,6 @@
                     class="friend_item"
                     v-for="(item, index) in friends"
                     :key="index"
-                    @click="sendJoin"
                 >
                     <img :src="item.picture" class="friend_item_image" />
                     <span>{{ item.login }}</span>
@@ -51,7 +50,7 @@
         </div>
 
         <AppButtonBasic>Добавить друзей</AppButtonBasic>
-        <AppButtonFilled @click="openSession">Создать сессию</AppButtonFilled>
+        <AppButtonFilled @click="createNewSession">Создать сессию</AppButtonFilled>
     </section>
 </template> 
 
@@ -60,7 +59,7 @@
     import AppButtonFilled from '@/components/buttons/AppButtonFilled.vue';
     import AppButtonBasic from '@/components/buttons/AppButtonBasic.vue';
     import { getFriends } from '@/services/friendService';
-    import { createSession, sendJoinSession } from '@/services/sessionService';
+    import { createSession } from '@/services/sessionService';
     export default {
         components: { AppInputBasic, AppButtonFilled, AppButtonBasic },
         data() {
@@ -70,8 +69,7 @@
                 session_end: null,
                 session_country: null,
                 activeIndex: 1,
-                friends: null,
-                session_info: null
+                friends: null
             }
         },
         async created() {
@@ -79,20 +77,12 @@
             this.friends = friends_response;
         },
         methods: {
-            async sendJoin() {
-                const session_join_response = await sendJoinSession(this.session_info.id, localStorage.getItem('access_token'));
-                console.log(session_join_response);
-            },
             next() {
                 this.activeIndex++;
             },
             async createNewSession() {
                 const create_session_response = await createSession(this.session_name, localStorage.getItem('access_token'));
-                this.session_info = create_session_response;
-                this.activeIndex++;
-            },
-            openSession() {
-                console.log('111111');
+                console.log(create_session_response);
             }
         }
     };
@@ -166,7 +156,6 @@
         grid-template-columns: 1fr 1fr 1fr 1fr;
         column-gap: 15px;
         row-gap: 8px;
-        margin-top: 12px;
     }
 
     .friend_item {

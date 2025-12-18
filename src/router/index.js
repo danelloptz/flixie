@@ -7,10 +7,11 @@ import Login from "@/views/auth/AppLoginView.vue";
 import Register from "@/views/auth/AppRegisterView.vue";
 import Home from "@/views/home/AppHomeView.vue";
 import Friends from "@/views/friends/AppFriedsView.vue";
-import Sessions from "@/views/sessions/AppSessionsListView.vue";
 import Notifications from "@/views/notifications/AppNotificationsView.vue";
 import Settings from "@/views/settings/AppSettingsView.vue";
 import AppStart from "@/views/auth/AppStart.vue";
+import SessionCreate from "@/views/sessions/AppSessionCreateView.vue";
+import SessionMain from "@/views/sessions/AppSessionMain.vue";
 
 const routes = [
   {
@@ -28,7 +29,22 @@ const routes = [
     children: [
       { path: "", component: Home },
       { path: "friends", component: Friends, meta: { title: "Друзья" }, },
-      { path: "sessions", component: Sessions, meta: { title: "Сессии" }, },
+      { 
+        path: "sessions", 
+        component: SessionCreate, 
+        meta: { 
+          title: "Создание сессии" 
+        }, 
+        children: [
+          { 
+            path: "play", 
+            component: SessionMain,
+            meta: { 
+              title: "Сессия" 
+            }, 
+          },
+        ]
+      },
       { path: "notifications", component: Notifications, meta: { title: "Уведомления" }, },
       { path: "settings", component: Settings, meta: { title: "Настройки" }, },
     ],

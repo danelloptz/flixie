@@ -1,33 +1,39 @@
 <template>
-  <div>
-    <h1>Welcome to Flixie</h1>
-    <button @click="send">
-      rgegr
-    </button>
-  </div>
+  <section class="home">
+    <AppNotification 
+      v-if="isNotification" 
+      :title="title_notification" 
+      :message="text_notification" 
+      :visibility="isNotification" 
+      @update:visibility="isNotification = $event" 
+      @close="close"
+    />
+    <section class="sessions">
+      <AppSessionCard 
+        v-for="(item, index) in sessions"
+        :key="index"
+        :session="item"
+      />
+    </section>
+  </section>
 </template>
 
 <script>
   import { sendFriendNotification } from '@/services/friendService';
+  import AppNotification from '@/components/other/AppNotification.vue';
+  import { getSessions, getSessionParticipants } from '@/services/sessionService';
+  import AppSessionCard from '@/components/cards/AppSessionCard.vue';
 export default {
   name: "HomeView",
+  components: { AppNotification, AppSessionCard },
 
   data() {
     return {
       socket: null,
-      sessions: [
-        {
-          title: "Комната отдыха",
-          participants: [
-            {
-              id: "vrjgnrjngr24mkmk",
-              name: "Georgi Z",
-              avatar: "http://localhost:9000/img/ffa000e7-9821-43ad-b9c6-750472a2da0e",
-            },
-          ],
-          date_end: 1767078030,
-        },
-      ],
+      sessions: null,
+      isNotification: false,
+      text_notification: null,
+      title_notification: null,
     };
   },
 
@@ -39,7 +45,15 @@ export default {
     this.disconnectWebSocket();
   },
 
+  async created() {
+    const sessions_response = await getSessions(localStorage.getItem('access_token'));
+    this.sessions = sessions_response;
+  },
+
   methods: {
+    close() {
+      this.isNotification = false;
+    },
     async send() {
       await sendFriendNotification(47, localStorage.getItem('access_token'));
     },
@@ -47,8 +61,8 @@ export default {
       const token = localStorage.getItem("access_token"); // если есть
 
       const url = token
-        ? `ws://localhost:8080/ws?token=${token}`
-        : `ws://localhost:8080/ws`;
+        ? `ws://localhost:8000/ws?token=${token}`
+        : `ws://localhost:8000/ws`;
 
       this.socket = new WebSocket(url);
 
@@ -101,7 +115,11 @@ export default {
     },
 
     onFriendRequest(payload) {
-      alert("👤 Friend request received", payload);
+      this.isNotification = true;
+      this.title_notification = 'ЗАПРОС В ДРУЗЬЯ';
+      this.text_notification = 'К вам пришёл запрос в друзья';
+      console.log('👤 Friend request received', payload);
+      // alert("👤 Friend request received", payload);
       // TODO: добавить уведомление
     },
 
@@ -117,3 +135,19 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+
+  .home {
+    width: 100%;
+    padding: 0px 17px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sessions {
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+  }
+</style>
