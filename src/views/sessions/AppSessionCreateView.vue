@@ -2,7 +2,7 @@
     <section class="wrapper" v-if="activeIndex == 1">
         <div class="header">
             <div class="close">
-                <img src="@/assets/images/close.png" class="close_cross" />
+                <img src="@/assets/images/close_red.png" class="close_cross" />
             </div>
             <div class="title_block">
                 <h2>Создание сессии</h2>
@@ -13,19 +13,34 @@
             <span class="settings_text">Название сессии</span>
             <AppInputBasic class="input" :placeholder="'Название'" v-model="session_name" />
 
-            <span class="settings_text">Годы выпуска</span>
+            <div class="friends">
+                <span class="settings_text">Пригласить друзей</span>
+                <div class="friends_list">
+                    <div 
+                        class="friend_item"
+                        v-for="(item, index) in friends"
+                        :key="index"
+                        @click="sendJoin(item.id)"
+                    >
+                        <img :src="item.picture" class="friend_item_image" :class="{ active_friend: selected_friends.indexOf(item.id) != -1 }" />
+                        <span>{{ item.login }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <span class="settings_text">Годы выпуска</span>
             <div class="row">
                 <AppInputBasic class="input"  :placeholder="'от'" v-model="session_start" />
                 <AppInputBasic class="input"  :placeholder="'до'" v-model="session_end" />
             </div>
 
             <span class="settings_text">Страна производства</span>
-            <AppInputBasic class="input m-b"  :placeholder="'Страна'" v-model="session_country" />
+            <AppInputBasic class="input m-b"  :placeholder="'Страна'" v-model="session_country" /> -->
 
-            <AppButtonFilled @click="createNewSession">Далее</AppButtonFilled>
+            <AppButtonFilled class="create_session_btn" @click="createNewSession">Создать сессию</AppButtonFilled>
         </div>
     </section>
-    <section class="wrapper" v-if="activeIndex == 2">
+    <!-- <section class="wrapper" v-if="activeIndex == 2">
         <div class="header">
             <div class="close">
                 <img src="@/assets/images/close.png" class="close_cross" />
@@ -42,7 +57,7 @@
                     class="friend_item"
                     v-for="(item, index) in friends"
                     :key="index"
-                    @click="sendJoin"
+                    @click="sendJoin(item.id)"
                 >
                     <img :src="item.picture" class="friend_item_image" />
                     <span>{{ item.login }}</span>
@@ -51,8 +66,8 @@
         </div>
 
         <AppButtonBasic>Добавить друзей</AppButtonBasic>
-        <AppButtonFilled @click="openSession">Создать сессию</AppButtonFilled>
-    </section>
+        <AppButtonFilled @click="openSession(session_info.id)">Создать сессию</AppButtonFilled>
+    </section> -->
 </template> 
 
 <script>
@@ -60,7 +75,7 @@
     import AppButtonFilled from '@/components/buttons/AppButtonFilled.vue';
     import AppButtonBasic from '@/components/buttons/AppButtonBasic.vue';
     import { getFriends } from '@/services/friendService';
-    import { createSession, sendJoinSession } from '@/services/sessionService';
+    import { createSession, sendInviteSession } from '@/services/sessionService';
     export default {
         components: { AppInputBasic, AppButtonFilled, AppButtonBasic },
         data() {
@@ -71,7 +86,8 @@
                 session_country: null,
                 activeIndex: 1,
                 friends: null,
-                session_info: null
+                session_info: null,
+                selected_friends: [],
             }
         },
         async created() {
@@ -79,9 +95,8 @@
             this.friends = friends_response;
         },
         methods: {
-            async sendJoin() {
-                const session_join_response = await sendJoinSession(this.session_info.id, localStorage.getItem('access_token'));
-                console.log(session_join_response);
+            sendJoin(id) {
+                this.selected_friends.push(id);
             },
             next() {
                 this.activeIndex++;
@@ -89,11 +104,17 @@
             async createNewSession() {
                 const create_session_response = await createSession(this.session_name, localStorage.getItem('access_token'));
                 this.session_info = create_session_response;
-                this.activeIndex++;
+                
+                if (this.selected_friends.length > 0) {
+                    this.selected_friends.forEach(async id => {
+                        await sendInviteSession(this.session_info.id, id, localStorage.getItem('access_token'));
+                    });
+                }
+                this.openSession(this.session_info.id);
             },
-            openSession() {
-                console.log('111111');
-            }
+            openSession(session_id) {
+                this.$router.push(`/sessions/play/${session_id}`);
+            },
         }
     };
 </script>
@@ -122,9 +143,9 @@
         width: 100%;
     }
 
-    .close img {
-        width: 45px;
-        height: 45px;
+    .close_cross {
+        width: 20px;
+        height: 20px;
     }
 
     .title_block h2 {
@@ -167,12 +188,16 @@
         column-gap: 15px;
         row-gap: 8px;
         margin-top: 12px;
+        background: var(--card_bg);
+        padding: 20px 16px;
+        border-radius: 14px;
     }
 
     .friend_item {
         display: flex;
         flex-direction: column;
         align-items: center;
+        row-gap: 10px;
     }
 
     .friend_item_image {
@@ -191,5 +216,13 @@
 
     .m-b {
         margin-bottom: 24px;
+    }
+
+    .active_friend {
+        outline: 7px solid var(--like);;
+    }
+
+    .create_session_btn {
+        margin-top: 23px;
     }
 </style>

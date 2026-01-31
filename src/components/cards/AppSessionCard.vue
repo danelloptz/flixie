@@ -1,6 +1,6 @@
 <template>
     <section class="session_card">
-        <h2>{{ friend?.name }}</h2> 
+        <h2>{{ session?.name }}</h2> 
         <div class="participants_wrapper">
             <img 
                 class="participant"
@@ -16,6 +16,7 @@
 </template>
 
 <script>
+    import { getSessionParticipants } from '@/services/sessionService';
     export default {
         props: {
             session: Object,
@@ -26,8 +27,9 @@
                 participants: null
             }
         },
-        methods: {
-
+        async created() {
+            const participants_response = await getSessionParticipants(this.session.id, localStorage.getItem('access_token'));
+            this.participants = participants_response;
         }
     };
 </script>
@@ -44,6 +46,7 @@
 
     h2 {
         font-size: var(--film_title);
+        font-weight: normal;
     }
 
     .participants_wrapper {

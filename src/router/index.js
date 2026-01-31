@@ -30,14 +30,18 @@ const routes = [
       { path: "friends", component: Friends, meta: { title: "Друзья" }, },
       { 
         path: "sessions", 
-        component: SessionCreate, 
-        meta: { 
-          title: "Создание сессии" 
-        }, 
         children: [
           { 
-            path: "play", 
+            path: "", 
+            component: SessionCreate,
+            meta: { 
+              title: "Создание сессии" 
+            }, 
+          },
+          { 
+            path: "play/:session_id", 
             component: SessionMain,
+            props: true,
             meta: { 
               title: "Сессия" 
             }, 

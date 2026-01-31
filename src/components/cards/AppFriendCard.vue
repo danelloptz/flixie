@@ -4,17 +4,20 @@
             <img :src="friend.picture" class="friend_photo" />
             <h2>{{ friend.login }}</h2> 
         </div>
-        <AppButtonFilled v-if="isAddFriend" @click="this.$emit('click', friend.id)">Добавить</AppButtonFilled>
+        <img v-if="isAddFriend" src="@/assets/images/plus.png" class="plus" @click="$emit('tap', friend.id)" />
+        <img v-if="isDelete" src="@/assets/images/Trash.png" class="trash" @click="$emit('delete', friend.id)"  />
+        <!-- <AppButtonFilled class="btn" v-if="isAddFriend" @click="$emit('tap', friend.id)">Добавить</AppButtonFilled> -->
     </section>
 </template>
 
 <script>
-    import AppButtonFilled from '@/components/buttons/AppButtonFilled.vue';
+    // import AppButtonFilled from '@/components/buttons/AppButtonFilled.vue';
     export default {
-        components: { AppButtonFilled },
+        // components: { AppButtonFilled },
         props: {
             friend: Object,
-            isAddFriend: Boolean
+            isAddFriend: Boolean,
+            isDelete: Boolean
         },
     };
 </script>
@@ -45,5 +48,15 @@
 
     h2 {
         font-size: var(--film_title);
+    }
+
+    .plus {
+        width: 24px;
+        height: 24px;
+    }
+
+    .trash {
+        width: 24px;
+        height: 24px;
     }
 </style>

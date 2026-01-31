@@ -1,5 +1,8 @@
 <template>
-  <button class="btn" :type="type">
+  <button class="btn" :type="type" :style="{ 
+    border: borders ? '1px solid #7C8CFF' : 'none',
+    background: borders ? '#1E2130' : 'none'
+   }">
     <slot />
   </button>
 </template>
@@ -12,6 +15,9 @@ export default {
       type: String,
       default: "button",
     },
+    borders: {
+      type: Boolean,
+    }
   },
 };
 </script>

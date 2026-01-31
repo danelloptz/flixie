@@ -4,16 +4,27 @@
             <img src="@/assets/images/close.png" class="close" @click="close">
             <h1>{{ title }}</h1>
             <span>{{ message }}</span>
+            <div class="btns">
+                <AppButtonBasic @click="close">{{ btnCancelText }}</AppButtonBasic>
+                <AppButtonFilled @click="$emit('aply')">{{ btnAplyText }}</AppButtonFilled>
+            </div>
         </section>
     </div>
 </template>
 
 <script>
+import AppButtonBasic from '../buttons/AppButtonBasic.vue';
+import AppButtonFilled from '../buttons/AppButtonFilled.vue';
+
 export default {
+    components: { AppButtonFilled, AppButtonBasic },
     props: {
         title: String,
         message: String,
         visibility: Boolean,
+        isBtns: Boolean,
+        btnCancelText: String,
+        btnAplyText: String
     },
     methods: {
         close() {
@@ -120,5 +131,10 @@ export default {
         @media (max-width: 650px) {
             font-size: 17px;
         }
+    }
+    .btns {
+        display: flex;
+        column-gap: 20px;
+        align-items: center;
     }
 </style>

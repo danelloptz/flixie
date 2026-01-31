@@ -13,7 +13,7 @@
           v-model="password"
         />
       </div>
-
+      <span v-if="isError" class="error">Неверные данные</span>
       <AppButtonFilled
         @click="login"
       >
@@ -65,7 +65,8 @@ export default {
       google_client_id: "28060462209-8os8kkt6tp2008a5mretfr0fmugu6ri4.apps.googleusercontent.com",
       redirect_uri: "http://localhost:8080/auth/login",
       scopes: "openid+profile+email",
-      base_url: 'https://accounts.google.com/o/oauth2/v2/auth'
+      base_url: 'https://accounts.google.com/o/oauth2/v2/auth',
+      isError: false
     };
   },
   async mounted() {
@@ -73,16 +74,20 @@ export default {
   },
   methods: {
     async login() {
-      const login_response = await loginUser(this.loginValue, this.password);
-      if (login_response?.access_token) {
-        const authStore = useAuthStore();
+      try { 
+          const login_response = await loginUser(this.loginValue, this.password);
+          if (login_response?.access_token) {
+            const authStore = useAuthStore();
 
-        authStore.login({
-          access_token: login_response.access_token,
-          refresh_token: login_response.refresh_token,
-        });
+            authStore.login({
+              access_token: login_response.access_token,
+              refresh_token: login_response.refresh_token,
+            });
 
-        this.$router.push("/");
+            this.$router.push("/");
+          }
+      } catch(err) {
+        this.isError = true;
       }
     },
     openSignup() {

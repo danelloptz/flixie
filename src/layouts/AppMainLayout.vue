@@ -1,12 +1,12 @@
 <template>
   <div class="main-layout">
     <!-- Верхняя шапка -->
-    <header class="top-bar">
+    <!-- <header class="top-bar">
       <div></div>
       <h1 class="page-title">{{ pageTitle }}</h1>
 
       <img src="@/assets/images/flixie_nobg.png" class="logo" />
-    </header>
+    </header> -->
 
     <!-- Контент -->
     <main class="content">
@@ -34,8 +34,28 @@
   import SessionsIcon from "@/assets/images/Vector.png";
   import NotificationsIcon from "@/assets/images/notification-bell-alarm.png";
   import SettingsIcon from "@/assets/images/settings-account-more.png";
+  // import { useWSStore } from "@/store/ws";
   export default {
     name: "AppMainLayout",
+    data() {
+      return {
+        socket: null,
+      };
+    },
+
+    mounted() {
+      this.connectWebSocket();
+    },
+
+    beforeUnmount() {
+      this.socket?.close();
+    },
+
+    // mounted() {
+    //   const ws = useWSStore();
+    //   ws.connect();
+    // },
+
 
     computed: {
       pageTitle() {
@@ -56,6 +76,23 @@
     },
 
     methods: {
+      connectWebSocket() {
+        console.log('connection');
+      const token = localStorage.getItem("access_token");
+
+      this.socket = new WebSocket(
+        `ws://localhost:8000/ws?token=${token}`
+      );
+
+      this.socket.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+
+        // 🔥 прокидываем глобально
+        window.dispatchEvent(
+          new CustomEvent("ws-message", { detail: payload })
+        );
+      };
+    },
       go(path) {
         if (this.$route.path !== path) {
           this.$router.push(path);

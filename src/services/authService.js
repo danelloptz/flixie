@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+const baseURL = 'http://127.0.0.1:8000';
+// const baseURL = 'https://web.intelektaz.com/api/flixie';
+
 export async function authGoogle(code) {
     try {
-        const response = await axios.get('http://127.0.0.1:8000/auth/callback', 
+        const response = await axios.get(`${baseURL}/auth/callback`, 
             {
                 params: {
                     code: code
@@ -19,7 +22,7 @@ export async function authGoogle(code) {
 export async function signupUser(login, password, email, genres, avatar_link) {
   try {
     const response = await axios.post(
-      "http://127.0.0.1:8000/auth/registration", {
+      `${baseURL}/auth/registration`, {
         "login": login,
         "password": password,
         "email": email,
@@ -37,7 +40,7 @@ export async function signupUser(login, password, email, genres, avatar_link) {
 
 export async function signupSubmit(token) {
     try {
-        const response = await axios.get('http://127.0.0.1:8000/auth/submit', 
+        const response = await axios.get(`${baseURL}/auth/submit`, 
             {
                 params: {
                     token: token
@@ -57,7 +60,7 @@ export async function loadImage(avatar) {
     formData.append("avatar", avatar);
 
     const response = await axios.post(
-      "http://127.0.0.1:8000/auth/load_avatar",
+      `${baseURL}/auth/load_avatar`,
       formData
     );
 
@@ -68,11 +71,11 @@ export async function loadImage(avatar) {
   }
 }
 
-export async function loginUser(username, password) {
+export async function loginUser(login, password) {
   try {
     const response = await axios.post(
-      "http://127.0.0.1:8000/auth/login", {
-        "username": username,
+      `${baseURL}/auth/login`, {
+        "login": login,
         "password": password,
       }
     );

@@ -1,184 +1,189 @@
 <template>
-    <section class="wrapper" v-if="activeIndex == 1">
+    <AppMatchCard
+        v-if="match"
+        :match="match"
+        @close="closeMatch"
+        @more="aboutFilm"
+    />
+    <section class="game" v-if="!match">
         <div class="header">
-            <div class="close">
-                <img src="@/assets/images/close.png" class="close_cross" />
-            </div>
-            <div class="title_block">
-                <h2>Создание сессии</h2>
+            <div></div>
+            <h2>Сессия</h2>
+            <div class="cross">
+                <img
+                    src="@/assets/images/close_red.png"
+                    @click="$router.push('/')"
+                />
             </div>
         </div>
 
-        <div class="settings">
-            <span class="settings_text">Название сессии</span>
-            <AppInputBasic class="input" :placeholder="'Название'" v-model="session_name" />
-
-            <span class="settings_text">Годы выпуска</span>
-            <div class="row">
-                <AppInputBasic class="input"  :placeholder="'от'" v-model="session_start" />
-                <AppInputBasic class="input"  :placeholder="'до'" v-model="session_end" />
-            </div>
-
-            <span class="settings_text">Страна производства</span>
-            <AppInputBasic class="input m-b"  :placeholder="'Страна'" v-model="session_country" />
-
-            <AppButtonFilled @click="next">Далее</AppButtonFilled>
+        <div class="main">
+            <AppMovieCard
+                v-if="currentFilm"
+                :film="currentFilm"
+                :is_info="is_info"
+                @swipe="swipe"
+            />
         </div>
     </section>
-    <section class="wrapper" v-if="activeIndex == 2">
-        <div class="header">
-            <div class="close">
-                <img src="@/assets/images/close.png" class="close_cross" />
-            </div>
-            <div class="title_block">
-                <h2>Создание сессии</h2>
-            </div>
-        </div>
-
-        <div class="friends">
-            <span class="settings_text">Пригласить друзей</span>
-            <div class="friends_list">
-                <div 
-                    class="friend_item"
-                    v-for="(item, index) in friends"
-                    :key="index"
-                >
-                    <img :src="item.picture" class="friend_item_image" />
-                    <span>{{ item.login }}</span>
-                </div>
-            </div>
-        </div>
-
-        <AppButtonBasic>Добавить друзей</AppButtonBasic>
-        <AppButtonFilled @click="createNewSession">Создать сессию</AppButtonFilled>
-    </section>
-</template> 
+</template>
 
 <script>
-    import AppInputBasic from '@/components/inputs/AppInputBasic.vue';
-    import AppButtonFilled from '@/components/buttons/AppButtonFilled.vue';
-    import AppButtonBasic from '@/components/buttons/AppButtonBasic.vue';
-    import { getFriends } from '@/services/friendService';
-    import { createSession } from '@/services/sessionService';
-    export default {
-        components: { AppInputBasic, AppButtonFilled, AppButtonBasic },
-        data() {
-            return {
-                session_name: null,
-                session_start: null,
-                session_end: null,
-                session_country: null,
-                activeIndex: 1,
-                friends: null
+import { getFilmBatch, voteFilm, getFilmById } from "@/services/sessionService";
+import AppMovieCard from "@/components/cards/AppMovieCard.vue";
+import AppMatchCard from "@/components/cards/AppMatchCard.vue";
+
+export default {
+    components: { AppMovieCard, AppMatchCard },
+    props: {
+        session_id: {
+            type: Number,
+            required: true,
+        },
+    },
+
+    data() {
+        return {
+            films: [],
+            match: null,
+            is_info: false
+        };
+    },
+
+    computed: {
+        currentFilm() {
+            return this.films[0] || null;
+        },
+    },
+
+    mounted() {
+        window.addEventListener("ws-message", this.handleNotification);
+    },
+
+    beforeUnmount() {
+        window.removeEventListener("ws-message", this.handleNotification);
+    },
+
+    async created() {
+        await this.loadFilms();
+    },
+
+    methods: {
+        async swipe(direction) {
+            const film = this.currentFilm;
+
+            await voteFilm(
+                film.id,
+                this.session_id,
+                direction === "right" ? "disliked" : "liked",
+                localStorage.getItem("access_token")
+            );
+
+            this.films.shift();
+
+            if (this.films.length < 3) {
+                await this.loadFilms();
             }
         },
-        async created() {
-            const friends_response = await getFriends(localStorage.getItem('access_token'));
-            this.friends = friends_response;
+        aboutFilm() {
+            this.films = [];
+            this.is_info = true;
+            this.films.push(this.match);
+            this.match = null;
         },
-        methods: {
-            next() {
-                this.activeIndex++;
-            },
-            async createNewSession() {
-                const create_session_response = await createSession(this.session_name, localStorage.getItem('access_token'));
-                console.log(create_session_response);
+        closeMatch() {
+            this.$router.push("/");
+        },
+        async handleNotification(payload) {
+            switch (payload.detail.type) {
+                case "match_event":
+                    console.log(payload);
+                    const get_film_response = await getFilmById(
+                        payload.detail.data.film_id,
+                        localStorage.getItem("access_token")
+                    );
+                    // alert(`MATCH: ${get_film_response.title}`);
+                    this.match = get_film_response;
+                    console.log(payload);
+                    break;
+
+                default:
+                    console.warn("⚠️ Unknown notification type", payload);
             }
-        }
-    };
+        },
+        async loadFilms() {
+            const batch = await getFilmBatch(
+                this.session_id,
+                localStorage.getItem("access_token")
+            );
+            this.films.push(...batch);
+        },
+    },
+};
 </script>
 
 <style scoped>
-    .wrapper {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-    }
+.main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin-top: 20px;
+}
 
-    .header {
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr 4fr;
-        column-gap: 6px;
-    }
+.card {
+    width: 90%;
+    max-width: 400px;
+    height: 70vh;
+    background-size: cover;
+    background-position: center;
+    border-radius: 20px;
+    position: relative;
+    transition: transform 0.2s ease;
+    border-radius: 20px;
+}
 
-    .close, .title_block {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 10px;
-        border-radius: 14px;
-        background: var(--nav_bar);
-        width: 100%;
-    }
+.overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    color: white;
+}
 
-    .close img {
-        width: 45px;
-        height: 45px;
-    }
+h1 {
+    margin: 0;
+    font-size: var(--film_title);
+}
 
-    .title_block h2 {
-        font-size: var(--film_title);
-        font-weight: normal;
-        letter-spacing: .6px;
-    }
+h3 {
+    margin: 5px 0;
+    opacity: 0.8;
+    font-size: var(--main_text);
+}
 
-    .settings, .friends {
-        margin-top: 16px;
-        display: flex;
-        flex-direction: column;
-        border-radius: 14px;
-        background: var(--nav_bar);
-        width: 100%;
-        padding: 8px;
-    }
+p {
+    font-size: 14px;
+    opacity: 0.9;
+}
 
-    .settings_text {
-        font-size: var(--main_text);
-        color: var(--unactive_text_color);
-        margin-top: 8px;
-    }
-
-    .input {
-        margin-top: 8px;
-    }
-
-    .row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        column-gap: 10px;
-    }
-
-    .friends_list {
-        width: 100%;
-        max-height: 330px;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        column-gap: 15px;
-        row-gap: 8px;
-    }
-
-    .friend_item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .friend_item_image {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        object-fit: cover;
-        object-position: center;
-        outline: 7px solid var(--card_bg);
-    }
-
-    .friend_item span {
-        font-size: var(--main_text);
-        color: var(--unactive_text_color);
-    }
-
-    .m-b {
-        margin-bottom: 24px;
-    }
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+.cross {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 14px;
+    background: var(--nav_bar);
+}
+.cross img {
+    width: 40px;
+    height: 40px;
+}
 </style>
