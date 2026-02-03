@@ -2,7 +2,7 @@
     <div
         v-if="film && !more"
         class="card"
-        :style="{ backgroundImage: `url(${posterUrl})` }"
+        :style="cardStyle"
         @mousedown="startDrag"
         @mousemove="onDrag"
         @mouseup="endDrag"
@@ -60,7 +60,7 @@
             <span class="descr_title">Описание:</span>
             <span class="descr_text">{{ film.overview }}</span>
         </div>
-        <AppButtonBasic class="btn" :borders="true" @click="more = false">Вернуться к выбору</AppButtonBasic
+        <AppButtonBasic class="btn" :borders="true" @click="get_back">{{ is_info ? 'Закрыть' : 'Вернуться к выбору' }}</AppButtonBasic
         >
     </div>
 </template>
@@ -75,10 +75,7 @@
               type: Object,
               required: true,
           },
-          is_info: {
-            type: Boolean,
-            default: false
-          }
+          is_info: Boolean
       },
 
       emits: ["swipe"],
@@ -96,17 +93,41 @@
 
       watch: {
         is_info(val) {
-          this.more = val;
+            console.log(val);
+            this.more = val;
         }
       },
 
       computed: {
-          posterUrl() {
-              return `http://localhost:9000/img/${this.film.poster_path}`;
-          },
+        posterUrl() {
+            return `http://localhost:9000/img/${this.film.poster_path}`;
+        },
+        cardStyle() {
+            const rotate = this.deltaX / 20; // наклон
+            return {
+                backgroundImage: `url(${this.posterUrl})`,
+                transform: `translate(${this.deltaX}px, ${this.deltaY}px) rotate(${rotate}deg)`,
+                transition: this.isDragging ? "none" : "transform 0.3s ease-out",
+            };
+        }
+      },
+
+      created() {
+        this.more = this.is_info;
       },
 
       methods: {
+        resetCard() {
+            this.deltaX = 0;
+            this.deltaY = 0;
+        },
+        get_back() {
+            if (this.is_info) {
+                this.$emit('close');
+                return;
+            }
+            this.more = false;
+        },
           getYear(dateString) {
               const date = new Date(dateString);
               const year = date.getFullYear();
@@ -114,14 +135,17 @@
               return year;
           },
 
-          startDrag(e) {
-              this.isDragging = true;
+         startDrag(e) {
+            this.isDragging = true;
 
-              const point = e.touches ? e.touches[0] : e;
+            const point = e.touches ? e.touches[0] : e;
 
-              this.startX = point.clientX;
-              this.startY = point.clientY;
-          },
+            this.startX = point.clientX;
+            this.startY = point.clientY;
+            this.deltaX = 0;
+            this.deltaY = 0;
+        },
+
 
           onDrag(e) {
               if (!this.isDragging) return;
@@ -133,22 +157,35 @@
           },
 
           endDrag() {
-              if (!this.isDragging) return;
-              this.isDragging = false;
+                if (!this.isDragging) return;
+                this.isDragging = false;
 
-              const absX = Math.abs(this.deltaX);
-              const absY = Math.abs(this.deltaY);
+                const absX = Math.abs(this.deltaX);
+                const absY = Math.abs(this.deltaY);
 
-              if (this.deltaY < -120 && absY > absX) {
-                  this.more = true;
-              }
-              else if (absX > 100 && absX > absY) {
-                  this.$emit("swipe", this.deltaX > 0 ? "right" : "left");
-              }
+                // свайп вверх — показать more
+                if (this.deltaY < -120 && absY > absX) {
+                    this.more = true;
+                    this.resetCard();
+                    return;
+                }
 
-              this.deltaX = 0;
-              this.deltaY = 0;
-          },
+                // горизонтальный свайп
+                if (absX > 100 && absX > absY) {
+                    this.deltaX = this.deltaX > 0 ? 1000 : -1000; // улёт
+                    this.deltaY = 0;
+
+                    setTimeout(() => {
+                        this.$emit("swipe", this.deltaX > 0 ? "right" : "left");
+                        this.resetCard();
+                    }, 300);
+
+                    return;
+                }
+
+                // если не засчитан — вернуть назад
+                this.resetCard();
+            },
       },
   };
 </script>
@@ -167,6 +204,8 @@
       flex-direction: column;
       justify-content: end;
       align-items: center;
+      will-change: transform;
+        touch-action: none;
   }
 
   .card::after {

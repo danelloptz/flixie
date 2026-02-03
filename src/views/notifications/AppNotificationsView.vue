@@ -1,5 +1,19 @@
 <template>
-  <section class="notifications">
+  <section class="modals" v-if="match || card">
+    <AppMatchCard 
+      v-if="match"
+      :match="match"
+      @close="close_match"
+      @more="about_match"
+    />
+    <AppMovieCard 
+      v-if="card"
+      :film="card"
+      :is_info="true"
+      @close="close_movie"
+    />
+  </section>
+  <section class="notifications" v-if="!match && !card">
   <h1>Уведомления</h1>
 
   <div class="no_notifications" v-if="!notifications.length">
@@ -15,35 +29,58 @@
     >
       <h2>{{ getNotificationType(type) }}</h2>
 
+      <div 
+        v-if="type == 'session_invite'"
+        class="col"
+      >
+        <div
+          v-for="item in items"
+          :key="item.id"
+        >
+          <AppSessionInvite 
+            :session="item.data"
+            :user="test_user"
+            @submit="approveSessionRequest(item.data.session_id)"
+          />
+        </div>
+      </div>
+
+      <div 
+        v-if="type == 'friend_request'"
+        class="col"
+      >
+        <div
+          v-for="item in items"
+          :key="item.id"
+        >
+          <AppFriendRequest 
+            :user="test_user"
+            @submit="approveFriendRequest(item.sender_id)"
+          />
+        </div>
+      </div>
+
+      <div 
+        v-if="type == 'match_event'"
+        class="col"
+      >
+        <div
+          v-for="item in items"
+          :key="item.id"
+        >
+          <AppMatchEvent 
+            :session="item.data"
+            @open_match="openMatch(item.data.film_id)"
+          />
+        </div>
+      </div>
+
       <!-- TODO плашки: 
-        -  заявка в друзья
+        - заявка в друзья
         - приглашение в сессию
         - мэтч в сессии
         - системное уведомление 
       -->
-      <div
-        class="item"
-        v-for="item in items"
-        :key="item.id"
-      >
-        <span>
-          От пользователя #{{ item.sender_id }}
-        </span>
-
-        <AppButtonFilled
-          v-if="type === 'friend_request'"
-          @click="approveFriendRequest(item.sender_id)"
-        >
-          Принять
-        </AppButtonFilled>
-
-        <AppButtonFilled
-          v-if="type === 'session_invite'"
-          @click="approveSessionRequest(item.data.session_id)"
-        >
-          Принять
-        </AppButtonFilled>
-      </div>
     </div>
   </div>
 </section>
@@ -52,15 +89,26 @@
 
 <script>
   import AppButtonFilled from '@/components/buttons/AppButtonFilled.vue';
+  import AppSessionInvite from '@/components/panels/AppSessionInvite.vue';
+  import AppFriendRequest from '@/components/panels/AppFriendRequest.vue';
+  import AppMatchEvent from '@/components/panels/AppMatchEvent.vue';
+  import AppMatchCard from '@/components/cards/AppMatchCard.vue';
+  import AppMovieCard from '@/components/cards/AppMovieCard.vue';
 import { getNotifications } from '@/services/notificationService';
   import { approveRequest } from '@/services/friendService';
-  import { aprooveJoin } from '@/services/sessionService';
+  import { aprooveJoin, getFilmById } from '@/services/sessionService';
 export default {
   name: "AppNotificationsView",
-  components: { AppButtonFilled },
+  components: { AppButtonFilled, AppSessionInvite, AppFriendRequest, AppMatchEvent, AppMatchCard, AppMovieCard },
   data() {
     return {
-      notifications: []
+      notifications: [],
+      test_user: {
+        picture: "http://localhost:9000/img/avatar_d618515e-3213-4cc8-b851-ea51e98a7c16.png",
+        login: "Данил",
+      },
+      match: null, 
+      card: null
     }
   },
   async created() {
@@ -83,6 +131,21 @@ export default {
     }
   },
   methods: {
+    close_movie() {
+      this.card = null;
+    },
+    about_match() {
+      this.card = this.match;
+      this.match = null;
+    },
+    close_match() {
+      this.match = null;
+    },
+    async openMatch(id) {
+      const film_response = await getFilmById(id, localStorage.getItem('access_token'));
+      this.match = film_response;
+
+    },
     async approveSessionRequest(id) {
       const join_response = await aprooveJoin(
         +id,
@@ -168,5 +231,18 @@ export default {
     display: flex;
     flex-direction: column;
     row-gap: 8px;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+  }
+
+  .modals {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>
